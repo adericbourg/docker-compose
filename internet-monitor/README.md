@@ -14,19 +14,19 @@ This stack continuously monitors the quality of an internet connection and store
 ## Architecture
 
 ```
-Internet targets                     Exporters                  Storage          Visualisation
-─────────────────────────────────────────────────────────────────────────────────────────────
-  8.8.8.8  ──┐                                                                    
-  1.1.1.1  ──┤── ICMP ping ──► Blackbox Exporter :9115 ──┐                       
-  9.9.9.9  ──┘                                            │                       
-                                                          ├─► VictoriaMetrics ──► Grafana
-  google.com  ──┐                                         │       :8428             :3000
-  cloudflare ──┘── HTTP GET ──► Blackbox Exporter :9115 ──┘
-                                                          
-  Ookla servers ──────────────► Speedtest Exporter :9798 ──► VictoriaMetrics ──► Grafana
+Internet targets                     Exporters                              Storage          Visualisation
+─────────────────────────────────────────────────────────────────────────────────────────────────────────
+  8.8.8.8  ──┐
+  1.1.1.1  ──┤── ICMP ping ──► Blackbox Exporter :9115 ───────────────────────┐
+  9.9.9.9  ──┘                                                                 │
+                                                                               ├─► VictoriaMetrics ──► Grafana
+  google.com  ──┐                                                              │       :8428             :3000
+  cloudflare ──┘── HTTP GET ──► Blackbox Exporter :9115 ──────────────────────┤
+                                                                               │
+  Ookla servers ──► Speedtest Exporter :9798 ──► Scheduler (crond) ──(push)───┘
 ```
 
-VictoriaMetrics drives the collection cycle: it scrapes the exporters on schedule, and the exporters run the probes on demand. Grafana only reads — it never touches the exporters directly.
+For ICMP and HTTP, VictoriaMetrics drives the collection cycle: it scrapes the exporters on schedule, and they run the probes on demand. For bandwidth, the Speedtest Scheduler fetches from the exporter and **pushes** the results to VictoriaMetrics — allowing it to apply peak-hours logic before deciding whether to run a test. Grafana only reads — it never touches the exporters directly.
 
 ---
 
@@ -61,7 +61,38 @@ Runs the Ookla Speedtest CLI on every scrape and exposes the results as Promethe
 - `speedtest_ping_latency_milliseconds`
 - `speedtest_jitter_latency_milliseconds`
 
-The scrape interval is intentionally set to **4 hours**. Each test consumes real bandwidth and takes ~30–90 seconds; running it more frequently would saturate the link and distort the very metrics being measured.
+Each test consumes real bandwidth and takes ~30–90 seconds. The exporter is not scraped directly by VictoriaMetrics — the Speedtest Scheduler controls when tests run (see below).
+
+---
+
+### Speedtest Scheduler
+
+**Script:** `speedtest-scheduler/schedule.sh`
+
+A lightweight Alpine container running `crond`. Every hour it decides whether to run a bandwidth test based on time-of-day rules:
+
+| Time window | Behaviour |
+|---|---|
+| Off-peak / weekends | Run every hour |
+| Peak hours (Mon–Fri, 09h–18h, excl. lunch) | Run every 4 hours |
+| Lunch break (12h–13h) | Skip |
+
+When a test is due, the script fetches metrics from the Speedtest Exporter and **pushes** them into VictoriaMetrics via `/api/v1/import/prometheus`. This is a push model — VictoriaMetrics does not scrape the exporter directly.
+
+The schedule is configurable via environment variables in `docker-compose.yml`:
+
+| Variable | Default | Description |
+|---|---|---|
+| `PEAK_HOURS_START` | `9` | Start of peak window (24 h) |
+| `PEAK_HOURS_END` | `18` | End of peak window (24 h) |
+| `LUNCH_BREAK_START` | `12` | Start of lunch exclusion |
+| `LUNCH_BREAK_END` | `13` | End of lunch exclusion |
+
+To run a test immediately without waiting for the next scheduled window:
+
+```bash
+./trigger-speedtest.sh
+```
 
 ---
 
@@ -77,7 +108,8 @@ Three scrape jobs are configured:
 |---|---|---|---|
 | `blackbox_icmp` | 8.8.8.8, 1.1.1.1, 9.9.9.9 | 30 s | `icmp` |
 | `blackbox_http` | google.com, cloudflare.com | 30 s | `http_2xx` |
-| `speedtest` | speedtest-exporter:9798 | 4 h | — |
+
+Speedtest metrics are not scraped by VictoriaMetrics — they are pushed by the Speedtest Scheduler (see above).
 
 **How the blackbox relabelling works:**  
 For `blackbox_icmp` and `blackbox_http`, the targets listed in `static_configs` are the *probe destinations* (e.g. `8.8.8.8`), not the exporter address. The `relabel_configs` block rewrites the scrape address to `blackbox-exporter:9115` and passes the original target as the `?target=` query parameter. This way a single Blackbox Exporter instance handles all targets without needing separate scrape jobs per IP.

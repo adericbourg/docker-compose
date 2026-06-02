@@ -15,8 +15,13 @@ is_peak() {
     ! { [ "$hour" -ge "$LUNCH_START" ] && [ "$hour" -lt "$LUNCH_END" ]; }
 }
 
-if is_peak; then
-    [ $((hour % 4)) -eq $((PEAK_START % 4)) ] || exit 0
+FORCE=0
+[ "${1:-}" = "--force" ] && FORCE=1
+
+if [ "$FORCE" -eq 0 ]; then
+    if is_peak; then
+        [ $((hour % 4)) -eq $((PEAK_START % 4)) ] || exit 0
+    fi
 fi
 
 metrics=$(curl -sf "http://speedtest-exporter:9798/metrics") || exit 1
