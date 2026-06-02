@@ -43,7 +43,7 @@ success "Container is running"
 info "Updating Grafana admin password..."
 
 docker compose -f "$COMPOSE_FILE" exec grafana \
-    grafana-cli admin reset-admin-password "$GF_ADMIN_PASSWORD"
+    grafana cli admin reset-admin-password "$GF_ADMIN_PASSWORD"
 
 # ─── Summary ──────────────────────────────────────────────────────────────────
 
