@@ -38,6 +38,24 @@ services:
       - "9798:9798"
     restart: unless-stopped
 
+  speedtest-scheduler:
+    image: alpine:latest
+    container_name: speedtest-scheduler
+    depends_on:
+      - speedtest-exporter
+      - victoriametrics
+    volumes:
+      - ./speedtest-scheduler/schedule.sh:/etc/periodic/hourly/speedtest:ro
+    environment:
+      - TZ=Europe/Paris
+      - PEAK_HOURS_START=9
+      - PEAK_HOURS_END=18
+      - LUNCH_BREAK_START=12
+      - LUNCH_BREAK_END=13
+    command: >
+      sh -c "apk add --no-cache curl tzdata && chmod +x /etc/periodic/hourly/speedtest && crond -f -d 8"
+    restart: unless-stopped
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
