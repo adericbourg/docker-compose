@@ -121,6 +121,19 @@ install_systemd() {
         exec_stop="${COMPOSE_BIN} down"
     fi
 
+    for f in /etc/systemd/system/*.service; do
+        [[ -f "$f" ]] || continue
+        if grep -q "WorkingDirectory=${STACK_DIR}" "$f"; then
+            stale=$(basename "$f" .service)
+            if [[ "$stale" != "$STACK" ]]; then
+                info "Removing stale service '${stale}' (same directory, different name)."
+                sudo systemctl stop "$stale" 2>/dev/null || true
+                sudo systemctl disable "$stale" 2>/dev/null || true
+                sudo rm "$f"
+            fi
+        fi
+    done
+
     [[ -f "$service_file" ]] && info "Existing service found — overwriting."
 
     info "Writing ${service_file} ..."
@@ -146,8 +159,13 @@ EOF
     info "Enabling and starting service..."
     sudo systemctl daemon-reload
     sudo systemctl enable "$STACK"
-    sudo systemctl start "$STACK"
-    success "systemd service '${STACK}' enabled and started"
+    if sudo systemctl is-active --quiet "$STACK"; then
+        sudo systemctl restart "$STACK"
+        success "systemd service '${STACK}' updated and restarted"
+    else
+        sudo systemctl start "$STACK"
+        success "systemd service '${STACK}' enabled and started"
+    fi
     info "  File: ${service_file}"
     info "  Logs: sudo journalctl -u ${STACK} -f"
 }
@@ -168,6 +186,18 @@ install_launchd() {
         <string>-c</string>
         <string>${COMPOSE_BIN} down --remove-orphans; ${COMPOSE_BIN} up -d --remove-orphans</string>"
     fi
+
+    for f in /Library/LaunchDaemons/local.*.plist; do
+        [[ -f "$f" ]] || continue
+        if grep -q "<string>${STACK_DIR}</string>" "$f"; then
+            stale_label=$(basename "$f" .plist)
+            if [[ "$stale_label" != "$label" ]]; then
+                info "Removing stale LaunchDaemon '${stale_label}' (same directory, different name)."
+                sudo launchctl bootout "system/${stale_label}" 2>/dev/null || true
+                sudo rm "$f"
+            fi
+        fi
+    done
 
     if [[ -f "$plist_file" ]]; then
         info "Existing LaunchDaemon found — removing before reinstall."
