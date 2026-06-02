@@ -110,12 +110,14 @@ fi
 install_systemd() {
     local service_file="/etc/systemd/system/${STACK}.service"
 
-    local exec_start exec_stop
+    local exec_start_down exec_start_up exec_stop
     if [[ "$COMPOSE_CMD" == "plugin" ]]; then
-        exec_start="${DOCKER_BIN} compose up -d --remove-orphans"
+        exec_start_down="${DOCKER_BIN} compose down --remove-orphans"
+        exec_start_up="${DOCKER_BIN} compose up -d --remove-orphans"
         exec_stop="${DOCKER_BIN} compose down"
     else
-        exec_start="${COMPOSE_BIN} up -d --remove-orphans"
+        exec_start_down="${COMPOSE_BIN} down --remove-orphans"
+        exec_start_up="${COMPOSE_BIN} up -d --remove-orphans"
         exec_stop="${COMPOSE_BIN} down"
     fi
 
@@ -133,7 +135,8 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=${STACK_DIR}
-ExecStart=${exec_start}
+ExecStart=${exec_start_down}
+ExecStart=${exec_start_up}
 ExecStop=${exec_stop}
 
 [Install]
@@ -157,16 +160,13 @@ install_launchd() {
 
     local prog_args
     if [[ "$COMPOSE_CMD" == "plugin" ]]; then
-        prog_args="        <string>${DOCKER_BIN}</string>
-        <string>compose</string>
-        <string>up</string>
-        <string>-d</string>
-        <string>--remove-orphans</string>"
+        prog_args="        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>${DOCKER_BIN} compose down --remove-orphans; ${DOCKER_BIN} compose up -d --remove-orphans</string>"
     else
-        prog_args="        <string>${COMPOSE_BIN}</string>
-        <string>up</string>
-        <string>-d</string>
-        <string>--remove-orphans</string>"
+        prog_args="        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>${COMPOSE_BIN} down --remove-orphans; ${COMPOSE_BIN} up -d --remove-orphans</string>"
     fi
 
     if [[ -f "$plist_file" ]]; then

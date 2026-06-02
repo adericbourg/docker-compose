@@ -48,12 +48,15 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/path/to/docker-compose/<stack-name>
+ExecStart=docker compose down --remove-orphans
 ExecStart=docker compose up -d --remove-orphans
 ExecStop=docker compose down
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+> **Why two `ExecStart` lines?** For `Type=oneshot` systemd runs them in sequence. The first `down` removes any stale containers left from a previous run (e.g. after an abrupt shutdown), ensuring `up` always starts from a clean state.
 
 Example for `internet-monitor`:
 
@@ -68,6 +71,7 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/path/to/docker-compose/internet-monitor
+ExecStart=docker compose down --remove-orphans
 ExecStart=docker compose up -d --remove-orphans
 ExecStop=docker compose down
 
@@ -94,6 +98,17 @@ sudo systemctl status <stack-name>
 ```
 
 The stack will now start automatically on every boot, after Docker and the network are ready.
+
+## Stopping the stack
+
+Always use `docker compose down` — **not** `docker compose stop` — to shut down a stack:
+
+```bash
+cd <stack-name>
+docker compose down
+```
+
+`docker compose stop` halts containers but leaves them in a stopped state. A subsequent `docker compose up` will fail with a _"container name already in use"_ conflict if it needs to recreate any container (e.g. after a config change). `docker compose down` removes containers so the next `up` can always create them fresh. Named volumes (`vm_data`, `grafana_data`) are preserved in either case.
 
 ## Restarting a service
 
