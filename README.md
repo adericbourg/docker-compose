@@ -17,6 +17,18 @@ cp .env.example .env   # if the stack has an .env.example
 docker compose up -d
 ```
 
+## Installing a stack (script)
+
+`install.sh` automates the steps below: it checks prerequisites, sets up `.env` if needed, and registers the stack as a system service so it starts on every boot.
+
+```bash
+./install.sh <stack-name>
+# example:
+./install.sh internet-monitor
+```
+
+The script supports **Linux** (systemd) and **macOS** (launchd). The service unit references this repo's directory directly — a `git pull` is reflected when the stack is next restarted.
+
 ## Auto-start on boot (systemd)
 
 To have a stack start automatically when the machine boots, create a systemd service unit.
