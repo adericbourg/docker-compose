@@ -129,7 +129,7 @@ The dashboard refreshes every **30 seconds** and defaults to a **24-hour** time 
 
 | Variable | Default | Description |
 |---|---|---|
-| `GF_ADMIN_PASSWORD` | `changeme` | Grafana admin password |
+| `GF_ADMIN_PASSWORD` | `changeme` | Grafana admin password — run `./change-password.sh` after changing |
 
 ---
 
@@ -152,6 +152,22 @@ Grafana is available at **http://\<VM-IP\>:3000**
 Login: `admin` / password set in `.env`
 
 The *Internet connection quality* dashboard is pre-loaded under **Dashboards → Network**.
+
+### Changing the admin password
+
+Grafana only reads `GF_SECURITY_ADMIN_PASSWORD` on the **first startup** — after that the password lives in its database. To update it:
+
+```bash
+# 1. Edit .env
+nano .env   # update GF_ADMIN_PASSWORD
+
+# 2. Push the new value into Grafana
+./change-password.sh
+```
+
+The script uses `grafana-cli` inside the running container to update the database directly. No restart is required.
+
+---
 
 ### Optional: import community dashboards
 
