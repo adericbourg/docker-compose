@@ -37,6 +37,11 @@ services:
     ports:
       - "9798:9798"
     restart: unless-stopped
+    # The image ships a built-in HEALTHCHECK that probes `localhost` (resolves to ::1),
+    # but waitress binds IPv4 only — probe always fails. Disable it; nothing depends on
+    # this service's health status in this stack.
+    healthcheck:
+      disable: true
 
   speedtest-scheduler:
     image: alpine:latest
@@ -53,7 +58,7 @@ services:
       - LUNCH_BREAK_START=12
       - LUNCH_BREAK_END=13
     command: >
-      sh -c "apk add --no-cache curl tzdata && chmod +x /etc/periodic/hourly/speedtest && crond -f -d 8"
+      sh -c "apk add --no-cache curl tzdata && crond -f -d 8"
     restart: unless-stopped
 
   grafana:
