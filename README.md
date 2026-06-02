@@ -94,3 +94,22 @@ sudo systemctl status <stack-name>
 ```
 
 The stack will now start automatically on every boot, after Docker and the network are ready.
+
+## Restarting a service
+
+Use this after a `git pull` or a config change to apply the update.
+
+### Linux (systemd)
+
+```bash
+sudo systemctl restart <stack-name>
+```
+
+### macOS (launchd)
+
+launchd has no single restart command — stop then start:
+
+```bash
+sudo launchctl bootout system/local.<stack-name>
+sudo launchctl bootstrap system /Library/LaunchDaemons/local.<stack-name>.plist
+```
