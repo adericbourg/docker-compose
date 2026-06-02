@@ -1,0 +1,48 @@
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+
+  # ── Latency & packet loss via ICMP ───────────────────────────────────────────
+  - job_name: blackbox_icmp
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets:
+          - 8.8.8.8     # Google DNS
+          - 1.1.1.1     # Cloudflare DNS
+          - 9.9.9.9     # Quad9 DNS
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # ── HTTP availability (response time, status) ────────────────────────────────
+  - job_name: blackbox_http
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://www.google.com
+          - https://www.cloudflare.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # ── Throughput (Ookla Speedtest) — 1 test per hour ──────────────────────────
+  # The test runs on every scrape: do not set below 30m
+  - job_name: speedtest
+    scrape_interval: 4h
+    scrape_timeout: 90s
+    static_configs:
+      - targets:
+          - speedtest-exporter:9798

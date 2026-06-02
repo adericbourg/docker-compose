@@ -1,0 +1,59 @@
+# Monitoring stack — Blackbox Exporter + Speedtest Exporter + VictoriaMetrics + Grafana
+# Compatible arm64 (Freebox Ultra)
+# Usage: docker compose up -d
+
+services:
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    ports:
+      - "8428:8428"
+    volumes:
+      - vm_data:/storage
+      - ./victoriametrics/scrape_config.yml:/etc/victoriametrics/scrape_config.yml:ro
+    command:
+      - --storageDataPath=/storage
+      - --retentionPeriod=120d
+      - --promscrape.config=/etc/victoriametrics/scrape_config.yml
+    restart: unless-stopped
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    cap_add:
+      - NET_RAW   # Required for ICMP probes (ping)
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./blackbox/config.yml:/etc/blackbox_exporter/config.yml:ro
+    restart: unless-stopped
+
+  speedtest-exporter:
+    # Note: check arm64 availability with `docker manifest inspect miguelndecarvalho/speedtest-exporter`
+    # Alternative if unavailable: ghcr.io/nicolerenee/speedtest-exporter
+    image: miguelndecarvalho/speedtest-exporter:latest
+    container_name: speedtest-exporter
+    ports:
+      - "9798:9798"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD:-changeme}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    depends_on:
+      - victoriametrics
+    restart: unless-stopped
+
+volumes:
+  vm_data:
+  grafana_data:
