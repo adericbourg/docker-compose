@@ -180,6 +180,17 @@ docker compose ps
 docker compose logs -f
 ```
 
+### Restarting the stack
+
+Use this after a config change, a `git pull`, or to recover from a stale-container error:
+
+```bash
+# from the repo root
+./restart.sh internet-monitor
+```
+
+This removes all containers first (`down --remove-orphans`) then recreates them fresh, matching the behaviour of the systemd/launchd service units. Named volumes are preserved.
+
 Grafana is available at **http://\<VM-IP\>:3000**  
 Login: `admin` / password set in `.env`
 

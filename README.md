@@ -114,6 +114,12 @@ docker compose down
 
 Use this after a `git pull` or a config change to apply the update.
 
+### Manual (no service manager)
+
+```bash
+./restart.sh <stack-name>
+```
+
 ### Linux (systemd)
 
 ```bash
