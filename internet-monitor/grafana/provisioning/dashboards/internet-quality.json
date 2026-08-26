@@ -840,7 +840,46 @@
           },
           "mappings": []
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": { "id": "byFrameRefID", "options": "A" },
+            "properties": [
+              { "id": "custom.lineWidth", "value": 1 },
+              { "id": "custom.fillOpacity", "value": 5 },
+              { "id": "custom.pointSize", "value": 3 },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byFrameRefID", "options": "B" },
+            "properties": [
+              { "id": "custom.lineWidth", "value": 1 },
+              { "id": "custom.fillOpacity", "value": 5 },
+              { "id": "custom.pointSize", "value": 3 },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-orange" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byFrameRefID", "options": "C" },
+            "properties": [
+              { "id": "custom.lineWidth", "value": 3 },
+              { "id": "custom.fillOpacity", "value": 0 },
+              { "id": "custom.showPoints", "value": "never" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byFrameRefID", "options": "D" },
+            "properties": [
+              { "id": "custom.lineWidth", "value": 3 },
+              { "id": "custom.fillOpacity", "value": 0 },
+              { "id": "custom.showPoints", "value": "never" },
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          }
+        ]
       },
       "targets": [
         {
@@ -860,6 +899,24 @@
           "expr": "speedtest_jitter_latency_milliseconds",
           "legendFormat": "Jitter",
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg_over_time(speedtest_ping_latency_milliseconds[12h])",
+          "legendFormat": "Ping (trend)",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "avg_over_time(speedtest_jitter_latency_milliseconds[12h])",
+          "legendFormat": "Jitter (trend)",
+          "refId": "D"
         }
       ]
     }
