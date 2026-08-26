@@ -718,6 +718,7 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-blue" } }
             ]
           },
@@ -727,6 +728,7 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
+              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-orange" } }
             ]
           },
