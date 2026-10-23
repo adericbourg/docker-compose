@@ -475,12 +475,75 @@
       ]
     },
     {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Videoconference latency (ICMP)",
+      "description": "ICMP round-trip time in milliseconds to videoconference front ends (excludes DNS resolution)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "drawStyle": "line"
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              }
+            ]
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "probe_icmp_duration_seconds{job=\"blackbox_icmp_videoconf\", phase=\"rtt\"} * 1000",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
       "id": 8,
       "type": "row",
       "title": "HTTP Availability",
       "gridPos": {
         "x": 0,
-        "y": 13,
+        "y": 21,
         "w": 24,
         "h": 1
       },
@@ -498,7 +561,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 14,
+        "y": 22,
         "w": 10,
         "h": 8
       },
@@ -588,7 +651,7 @@
       },
       "gridPos": {
         "x": 10,
-        "y": 14,
+        "y": 22,
         "w": 14,
         "h": 8
       },
@@ -655,7 +718,7 @@
       "title": "Throughput (Ookla Speedtest — 1 test/hour)",
       "gridPos": {
         "x": 0,
-        "y": 22,
+        "y": 30,
         "w": 24,
         "h": 1
       },
@@ -673,7 +736,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 31,
         "w": 14,
         "h": 8
       },
@@ -802,7 +865,7 @@
       },
       "gridPos": {
         "x": 14,
-        "y": 23,
+        "y": 31,
         "w": 10,
         "h": 8
       },

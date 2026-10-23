@@ -19,6 +19,9 @@ Internet targets                     Exporters                              Stor
   8.8.8.8  ──┐
   1.1.1.1  ──┤── ICMP ping ──► Blackbox Exporter :9115 ───────────────────────┐
   9.9.9.9  ──┘                                                                 │
+  meet.google.com ──┐                                                          │
+  meet.proton.me  ──┤── ICMP ping ──► Blackbox Exporter :9115 ─────────────────┤
+  zoom.us         ──┘                                                          │
                                                                                ├─► VictoriaMetrics ──► Grafana
   google.com  ──┐                                                              │       :8428             :3000
   cloudflare ──┘── HTTP GET ──► Blackbox Exporter :9115 ──────────────────────┤
@@ -107,6 +110,7 @@ Three scrape jobs are configured:
 | Job | Target | Interval | Module |
 |---|---|---|---|
 | `blackbox_icmp` | 8.8.8.8, 1.1.1.1, 9.9.9.9 | 30 s | `icmp` |
+| `blackbox_icmp_videoconf` | meet.google.com, meet.proton.me, zoom.us | 30 s | `icmp` |
 | `blackbox_http` | google.com, cloudflare.com | 30 s | `http_2xx` |
 
 Speedtest metrics are not scraped by VictoriaMetrics — they are pushed by the Speedtest Scheduler (see above).
@@ -135,6 +139,7 @@ The bundled dashboard includes:
 | Upload (stat) | Gauge | Latest Speedtest upload, bps |
 | ICMP Latency per target | Time series | Per-IP probe duration over time |
 | Packet Loss per target | Time series | Per-IP rolling failure rate |
+| Videoconference latency (ICMP) | Time series | ICMP round-trip time to Meet, Proton Meet and Zoom front ends, ms |
 | HTTP Availability | Time series | UP/DOWN status per URL |
 | HTTP Response Time | Time series | Per-URL probe duration, ms |
 | Download/Upload throughput | Time series | Speedtest bandwidth over time |
