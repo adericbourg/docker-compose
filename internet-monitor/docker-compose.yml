@@ -34,8 +34,6 @@ services:
     container_name: smokeping-prober
     cap_add:
       - NET_RAW   # Required for ICMP probes (ping)
-    ports:
-      - "9374:9374"
     # Pings every second. 1 ms buckets up to 30 ms so jitter (histogram stddev) isn't
     # dominated by bucket width — the default buckets double at each step.
     command:
