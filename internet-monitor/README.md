@@ -1,6 +1,6 @@
 # Monitoring — Internet connection quality
 
-Stack: **Grafana + VictoriaMetrics + Blackbox Exporter + Speedtest Exporter**  
+Stack: **Grafana + VictoriaMetrics + Blackbox Exporter + Smokeping Prober + Speedtest Exporter**  
 Compatible **arm64** (Freebox Ultra)
 
 ---
@@ -20,7 +20,7 @@ Internet targets                     Exporters                              Stor
   1.1.1.1  ──┤── ICMP ping ──► Blackbox Exporter :9115 ───────────────────────┐
   9.9.9.9  ──┘                                                                 │
   meet.google.com ──┐                                                          │
-  meet.proton.me  ──┤── ICMP ping ──► Blackbox Exporter :9115 ─────────────────┤
+  meet.proton.me  ──┤── ICMP ping (1/s) ──► Smokeping Prober :9374 ────────────┤
   zoom.us         ──┘                                                          │
                                                                                ├─► VictoriaMetrics ──► Grafana
   google.com  ──┐                                                              │       :8428             :3000
@@ -29,7 +29,7 @@ Internet targets                     Exporters                              Stor
   Ookla servers ──► Speedtest Exporter :9798 ──► Scheduler (crond) ──(push)───┘
 ```
 
-For ICMP and HTTP, VictoriaMetrics drives the collection cycle: it scrapes the exporters on schedule, and they run the probes on demand. For bandwidth, the Speedtest Scheduler fetches from the exporter and **pushes** the results to VictoriaMetrics — allowing it to apply peak-hours logic before deciding whether to run a test. Grafana only reads — it never touches the exporters directly.
+For blackbox ICMP and HTTP, VictoriaMetrics drives the collection cycle: it scrapes the exporters on schedule, and they run the probes on demand. For bandwidth, the Speedtest Scheduler fetches from the exporter and **pushes** the results to VictoriaMetrics — allowing it to apply peak-hours logic before deciding whether to run a test. Grafana only reads — it never touches the exporters directly.
 
 ---
 
@@ -50,6 +50,22 @@ Three probe modules are defined:
 | `tcp_connect` | TCP | 5 s | Not currently used; available for port-level checks |
 
 The container requires the `NET_RAW` Linux capability to send raw ICMP packets. Without it, ping probes would fail silently.
+
+---
+
+### Smokeping Prober
+
+**Image:** `quay.io/superq/smokeping-prober` (arm64-compatible)
+
+Pings the videoconference front ends (meet.google.com, meet.proton.me, zoom.us) **every second** and records round-trip times in a histogram (`smokeping_response_duration_seconds`) next to a sent-pings counter (`smokeping_requests_total`). Blackbox sends one ping per 30 s scrape, which can't resolve loss below ~10 % — calls already degrade at 1–2 %. With ~300 pings per 5 minutes, loss and jitter become meaningful.
+
+Targets and histogram buckets are set as command-line arguments in `docker-compose.yml`. Buckets are 1 ms wide up to 30 ms because jitter is computed as the histogram's standard deviation, and the default buckets (doubling at each step) would make that estimate mostly bucket width.
+
+Traffic cost: ~84 B each way per host per second, i.e. ~2 kbit/s in total — negligible next to a video call.
+
+Like Blackbox, it needs the `NET_RAW` capability.
+
+> Docker Desktop on macOS answers ICMP locally, so RTTs measured there are ~1 ms and meaningless. Real values only show up on a Linux host.
 
 ---
 
@@ -110,7 +126,7 @@ Three scrape jobs are configured:
 | Job | Target | Interval | Module |
 |---|---|---|---|
 | `blackbox_icmp` | 8.8.8.8, 1.1.1.1, 9.9.9.9 | 30 s | `icmp` |
-| `blackbox_icmp_videoconf` | meet.google.com, meet.proton.me, zoom.us | 30 s | `icmp` |
+| `smokeping` | smokeping-prober:9374 (pings meet.google.com, meet.proton.me, zoom.us) | 30 s | — |
 | `blackbox_http` | google.com, cloudflare.com | 30 s | `http_2xx` |
 
 Speedtest metrics are not scraped by VictoriaMetrics — they are pushed by the Speedtest Scheduler (see above).
@@ -139,11 +155,22 @@ The bundled dashboard includes:
 | Upload (stat) | Gauge | Latest Speedtest upload, bps |
 | ICMP Latency per target | Time series | Per-IP probe duration over time |
 | Packet Loss per target | Time series | Per-IP rolling failure rate |
-| Videoconference latency (ICMP) | Time series | ICMP round-trip time to Meet, Proton Meet and Zoom front ends, ms |
+| Call quality (MOS) | Gauge | Estimated Mean Opinion Score (1–5) of the worst videoconference target |
+| Videoconference latency | Time series | Mean round-trip time to Meet, Proton Meet and Zoom front ends over 5 min, ms |
+| Videoconference jitter | Time series | Standard deviation of the round-trip time over 5 min, ms |
+| Videoconference packet loss | Time series | Share of unanswered pings over 5 min, % |
 | HTTP Availability | Time series | UP/DOWN status per URL |
 | HTTP Response Time | Time series | Per-URL probe duration, ms |
 | Download/Upload throughput | Time series | Speedtest bandwidth over time |
 | Ping & Jitter (Speedtest) | Time series | Speedtest latency and jitter |
+
+**About the MOS score:** it comes from a simplified ITU-T G.107 E-model, computed in MetricsQL from the three videoconference series:
+
+- effective latency = RTT + 2 × jitter + 10 ms
+- R = 93.2 − latency / 40 (− latency / 10 beyond 160 ms) − 2.5 × loss %
+- MOS = 1 + 0.035 R + 7·10⁻⁶ R (R − 60)(100 − R)
+
+Green ≥ 4.0, orange ≥ 3.6, red below. Take it as an indicator: the model was designed for voice calls, jitter is approximated by RTT spread (not the packet-to-packet jitter of RFC 3550), and the targets are web front ends — not the media servers calls actually use.
 
 The dashboard refreshes every **30 seconds** and defaults to a **24-hour** time window.
 

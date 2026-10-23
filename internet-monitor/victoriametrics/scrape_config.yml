@@ -21,24 +21,12 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter:9115
 
-  # ── Videoconference latency via ICMP ─────────────────────────────────────────
-  # Separate job so the headline ICMP stats (DNS resolvers) stay comparable
-  - job_name: blackbox_icmp_videoconf
-    metrics_path: /probe
-    params:
-      module: [icmp]
+  # ── Videoconference latency, jitter & loss via 1 s pings ─────────────────────
+  # Targets are configured on the smokeping-prober container (docker-compose.yml)
+  - job_name: smokeping
     static_configs:
       - targets:
-          - meet.google.com   # Google Meet
-          - meet.proton.me    # Proton Meet
-          - zoom.us           # Zoom (web front end, not media servers)
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: blackbox-exporter:9115
+          - smokeping-prober:9374
 
   # ── HTTP availability (response time, status) ────────────────────────────────
   - job_name: blackbox_http
