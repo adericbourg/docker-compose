@@ -990,7 +990,6 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
-              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-blue" } }
             ]
           },
@@ -1000,7 +999,6 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
-              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-orange" } }
             ]
           },
@@ -1020,6 +1018,16 @@
               { "id": "custom.fillOpacity", "value": 0 },
               { "id": "custom.showPoints", "value": "never" },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          },
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": { "mode": "exclude", "names": ["Download (trend)", "Upload (trend)"], "prefix": "All except:", "readOnly": true }
+            },
+            "properties": [
+              { "id": "custom.hideFrom", "value": { "legend": false, "tooltip": false, "viz": true } }
             ]
           }
         ]
@@ -1119,7 +1127,6 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
-              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-blue" } }
             ]
           },
@@ -1129,7 +1136,6 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
-              { "id": "custom.hideFrom", "value": { "tooltip": false, "viz": true, "legend": false } },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-orange" } }
             ]
           },
@@ -1149,6 +1155,16 @@
               { "id": "custom.fillOpacity", "value": 0 },
               { "id": "custom.showPoints", "value": "never" },
               { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+            ]
+          },
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": { "mode": "exclude", "names": ["Ping (trend)", "Jitter (trend)"], "prefix": "All except:", "readOnly": true }
+            },
+            "properties": [
+              { "id": "custom.hideFrom", "value": { "legend": false, "tooltip": false, "viz": true } }
             ]
           }
         ]
