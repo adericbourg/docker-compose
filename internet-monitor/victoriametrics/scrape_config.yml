@@ -12,7 +12,7 @@ scrape_configs:
       - targets:
           - 8.8.8.8     # Google DNS
           - 1.1.1.1     # Cloudflare DNS
-          - 9.9.9.9     # Quad9 DNS
+          - 86.54.11.100 # DNS4EU
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

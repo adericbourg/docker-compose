@@ -18,7 +18,7 @@ Internet targets                     Exporters                              Stor
 ─────────────────────────────────────────────────────────────────────────────────────────────────────────
   8.8.8.8  ──┐
   1.1.1.1  ──┤── ICMP ping ──► Blackbox Exporter :9115 ───────────────────────┐
-  9.9.9.9  ──┘                                                                 │
+  86.54.11.100 ──┘                                                             │
   meet.google.com ──┐                                                          │
   meet.proton.me  ──┤── ICMP ping (1/s) ──► Smokeping Prober :9374 ────────────┤
   zoom.us         ──┘                                                          │
@@ -125,7 +125,7 @@ Three scrape jobs are configured:
 
 | Job | Target | Interval | Module |
 |---|---|---|---|
-| `blackbox_icmp` | 8.8.8.8, 1.1.1.1, 9.9.9.9 | 30 s | `icmp` |
+| `blackbox_icmp` | 8.8.8.8, 1.1.1.1, 86.54.11.100 | 30 s | `icmp` |
 | `smokeping` | smokeping-prober:9374 (pings meet.google.com, meet.proton.me, zoom.us) | 30 s | — |
 | `blackbox_http` | google.com, cloudflare.com | 30 s | `http_2xx` |
 

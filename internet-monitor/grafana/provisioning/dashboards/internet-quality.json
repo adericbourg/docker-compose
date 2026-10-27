@@ -385,8 +385,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "probe_duration_seconds{job=\"blackbox_icmp\", instance=\"9.9.9.9\"} * 1000",
-          "legendFormat": "Quad9 (9.9.9.9)",
+          "expr": "probe_duration_seconds{job=\"blackbox_icmp\", instance=\"86.54.11.100\"} * 1000",
+          "legendFormat": "DNS4EU (86.54.11.100)",
           "refId": "C"
         }
       ]
@@ -468,8 +468,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(1 - avg_over_time(probe_success{job=\"blackbox_icmp\", instance=\"9.9.9.9\"}[5m])) * 100",
-          "legendFormat": "Quad9 (9.9.9.9)",
+          "expr": "(1 - avg_over_time(probe_success{job=\"blackbox_icmp\", instance=\"86.54.11.100\"}[5m])) * 100",
+          "legendFormat": "DNS4EU (86.54.11.100)",
           "refId": "C"
         }
       ]
