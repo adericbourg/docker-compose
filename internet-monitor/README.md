@@ -7,7 +7,7 @@ Compatible **arm64** (Freebox Ultra)
 
 ## Overview
 
-This stack continuously monitors the quality of an internet connection and stores results for up to 120 days. It measures latency and packet loss via ICMP pings, HTTP availability and response times, and periodically runs full bandwidth tests via the Ookla Speedtest CLI. All metrics are stored in VictoriaMetrics and visualised in a pre-provisioned Grafana dashboard.
+This stack continuously monitors the quality of an internet connection and stores results for up to 2 years. It measures latency and packet loss via ICMP pings, HTTP availability and response times, and periodically runs full bandwidth tests via the Ookla Speedtest CLI. All metrics are stored in VictoriaMetrics and visualised in a pre-provisioned Grafana dashboard.
 
 ---
 
@@ -119,7 +119,7 @@ To run a test immediately without waiting for the next scheduled window:
 
 **Config:** `victoriametrics/scrape_config.yml`
 
-VictoriaMetrics is a Prometheus-compatible time-series database that also acts as the scrape orchestrator. It pulls metrics from the exporters on a schedule and stores them for 120 days (configurable via `--retentionPeriod` in `docker-compose.yml`).
+VictoriaMetrics is a Prometheus-compatible time-series database that also acts as the scrape orchestrator. It pulls metrics from the exporters on a schedule and stores them for 2 years (configurable via `--retentionPeriod` in `docker-compose.yml`).
 
 Three scrape jobs are configured:
 

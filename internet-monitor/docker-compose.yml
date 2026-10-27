@@ -14,7 +14,7 @@ services:
       - ./victoriametrics/scrape_config.yml:/etc/victoriametrics/scrape_config.yml:ro
     command:
       - --storageDataPath=/storage
-      - --retentionPeriod=120d
+      - --retentionPeriod=2y
       - --promscrape.config=/etc/victoriametrics/scrape_config.yml
     restart: unless-stopped
 
