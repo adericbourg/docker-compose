@@ -1104,7 +1104,8 @@
             "fillOpacity": 10,
             "showPoints": "always",
             "spanNulls": true,
-            "drawStyle": "line"
+            "drawStyle": "line",
+            "axisSoftMin": 0
           },
           "color": {
             "mode": "palette-classic"
@@ -1136,7 +1137,9 @@
               { "id": "custom.lineWidth", "value": 1 },
               { "id": "custom.fillOpacity", "value": 5 },
               { "id": "custom.pointSize", "value": 3 },
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-orange" } }
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-orange" } },
+              { "id": "custom.axisPlacement", "value": "right" },
+              { "id": "custom.axisColorMode", "value": "series" }
             ]
           },
           {
@@ -1154,7 +1157,9 @@
               { "id": "custom.lineWidth", "value": 3 },
               { "id": "custom.fillOpacity", "value": 0 },
               { "id": "custom.showPoints", "value": "never" },
-              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+              { "id": "custom.axisPlacement", "value": "right" },
+              { "id": "custom.axisColorMode", "value": "series" }
             ]
           },
           {
